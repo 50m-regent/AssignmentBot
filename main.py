@@ -1,13 +1,20 @@
 import discord
+import pickle
+
+assignment_list = []
+
+client = discord.Client()
 
 async def kadaihelp(message):
-    string = ''
+    string = 'コマンドリスト\n'
     for command in COMMANDS:
+        string += '------------------------\n'
         string += '{}: {}\n'.format('!' + command, COMMANDS[command]['description'])
         string += '    使い方: {}\n'.format(COMMANDS[command]['use'])
         string += '    省略形: {}\n'.format(COMMANDS[command]['alias'])
+        string += '------------------------'
 
-    await message.channel.send('コマンドリスト\n' + string)
+    await message.channel.send(string)
 
 async def newkadai(message):
     msg = message.content.split(' ')
@@ -43,7 +50,14 @@ async def kadailist(message):
     string += '現在、{}個の課題が出されています。'.format(len(assignment_list))
     await message.channel.send(string)
 
-TOKEN = 'NzEwMDg0MjMxMTM2ODA0OTM0.XrvUOw.X5sCgLGqX5_RvT6ADIqH7eWAF10'
+async def close(message):
+    pickle.dump(assignment_list, open('assignments.pkl', 'wb'))
+
+    await message.channel.send('Bye^^')
+
+    await client.close()
+
+TOKEN = 'NzEwMDg0MjMxMTM2ODA0OTM0.Xr0JIg.GSZGT8j3ThQKfNw_GCEKD3T2PAs'
 COMMANDS = {
     'kadaihelp': {
         'description': 'このリストを表示します。',
@@ -68,19 +82,23 @@ COMMANDS = {
         'use': '!kadailist',
         'alias': '!kl',
         'func': kadailist
+    },
+    'exit': {
+        'description': 'Botを終了します。',
+        'use': '!exit',
+        'alias': '!ex',
+        'func': close
     }
 }
 
-client = discord.Client()
-
 def load_assignments():
-    return []
+    global assignment_list
+
+    assignment_list = pickle.load(open('assignments.pkl', 'rb'))
 
 @client.event
 async def on_ready():
-    global assignment_list
-    
-    assignment_list = load_assignments()
+    load_assignments()
 
     print('KadaiShosu起動')
 
